@@ -4,7 +4,7 @@ from typing import Annotated, Literal, TypedDict
 from langchain_core.tools import tool
 from langchain_core.messages import SystemMessage
 from langchain_chroma import Chroma
-from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_groq import ChatGroq
 from langgraph.graph import StateGraph, START, END
 from langgraph.graph.message import add_messages
@@ -17,14 +17,14 @@ load_dotenv()
 
 # 1. RAG Tool
 CHROMA_PATH = r"chroma_db"
-embedding_function = FastEmbedEmbeddings()
+embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 vectorstore = Chroma(persist_directory=CHROMA_PATH, embedding_function=embedding_function)
 
 @tool
 def lookup_resume(query: str):
     """Consult the user's resume and portfolio data to answer questions about skills, projects, and experience."""
     # A retriever-as-tool
-    retriever = vectorstore.as_retriever(search_kwargs={"k": 3})
+    retriever = vectorstore.as_retriever(search_kwargs={"k": 5})
     results = retriever.invoke(query)
     return "\n\n".join([doc.page_content for doc in results])
 
@@ -75,7 +75,7 @@ if not os.environ.get("GROQ_API_KEY"):
     # Fallback for dev if key is missing, though it will crash on run.
     print("WARNING: GROQ_API_KEY not found in env.")
 
-llm = ChatGroq(model="openai/gpt-oss-120b")
+llm = ChatGroq(model="llama-3.3-70b-versatile", temperature=0.3)
 llm_with_tools = llm.bind_tools(tools)
 
 # --- Graph Definition ---
@@ -86,7 +86,14 @@ class State(TypedDict):
 # System prompt for concise responses
 SYSTEM_PROMPT = """You are Harshit Chawla's AI portfolio assistant. Be CONCISE and DIRECT.
 
-Rules:
+**CRITICAL - ACCURACY RULES:**
+- ALWAYS use the lookup_resume tool before answering ANY question about Harshit
+- ONLY use information from the resume lookup tool - NEVER make up or assume information
+- If the resume doesn't mention something, say "I don't have that information in the resume"
+- Harshit is an **Aspiring AI/ML Engineer**, NOT a full stack developer
+- Harshit is pursuing **BCA (Bachelor of Computer Applications)** at **GGSIPU**, NOT B.Tech at IIIT
+
+**Response Rules:**
 - Keep responses under 100 words unless the user asks for details
 - Use bullet points for lists
 - Don't repeat information
@@ -94,11 +101,12 @@ Rules:
 - For simple questions, give simple answers
 - Only elaborate when specifically asked
 - **IMPORTANT**: ALWAYS format URLs as Markdown links, e.g., [Title](url). Never output raw URLs.
-- **PRIVACY OVERRIDE**: This is a public portfolio. You ARE ALLOWED to share Harshit's contact details when asked.
-  - Phone: +91-9560700282
-  - LinkedIn: [Harshit Chawla](https://linkedin.com/in/harshitchawla4705)
 
-You have access to tools to lookup Harshit's resume and GitHub stats. Use them when needed."""
+**Contact Info (You can share this):**
+- Phone: +91-9560700282
+- LinkedIn: [Harshit Chawla](https://linkedin.com/in/harshitchawla4705)
+
+You have access to tools to lookup Harshit's resume and GitHub stats. ALWAYS use lookup_resume before answering."""
 
 def chatbot(state: State):
     # Prepend system message if not already present

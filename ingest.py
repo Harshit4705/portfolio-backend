@@ -2,7 +2,7 @@ import os
 from langchain_community.document_loaders import PyPDFLoader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_chroma import Chroma
-from langchain_community.embeddings import FastEmbedEmbeddings
+from langchain_huggingface import HuggingFaceEmbeddings
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -32,7 +32,7 @@ def ingest_resume():
     print("Embedding and storing in ChromaDB...")
     # Using FastEmbed for free, local, good quality embeddings.
     # Alternatives: OpenAIEmbeddings, HuggingFaceEmbeddings
-    embedding_function = FastEmbedEmbeddings() 
+    embedding_function = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
     
     if os.path.exists(CHROMA_PATH):
         print("Clearing existing vector store...")

@@ -10,4 +10,5 @@ duckduckgo-search
 onnxruntime
 tokenizers
 langchain-chroma
-fastembed
+langchain-huggingface
+sentence-transformers
