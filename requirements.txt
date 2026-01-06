@@ -1,0 +1,13 @@
+fastapi
+uvicorn
+langgraph
+langchain-groq
+langchain-community
+chromadb
+python-dotenv
+pypdf
+duckduckgo-search
+onnxruntime
+tokenizers
+langchain-chroma
+fastembed
