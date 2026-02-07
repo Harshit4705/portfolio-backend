@@ -3,6 +3,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from agent import graph
 from langchain_core.messages import HumanMessage
+import os
+import logging
+
+# Setup logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
 app = FastAPI(title="Portfolio Chatbot Agent")
 
@@ -26,18 +32,20 @@ def read_root():
 @app.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
+        logger.info(f"Received query: {request.query}")
         initial_state = {"messages": [HumanMessage(content=request.query)]}
-        # In a real app complexity, you'd handle thread_id for memory in LangGraph checkpointer
-        # For this simple v1, we just invoke the graph statelessly or with in-memory state if we configured checkpointer.
-        # The graph as defined in agent.py doesn't use checkpointer yet, so it is stateless conversation turn.
         
         result = graph.invoke(initial_state)
         final_message = result["messages"][-1]
         
+        logger.info(f"Response generated successfully")
         return {"response": final_message.content}
     except Exception as e:
+        logger.error(f"Error processing chat: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=str(e))
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    port = int(os.environ.get("PORT", 8000))
+    uvicorn.run(app, host="0.0.0.0", port=port)
+
