@@ -47,13 +47,19 @@ Notable Projects:
   - AI Chatbot with RAG
   - Machine Learning Projects
 
-Note: Live stats temporarily unavailable due to API limits. Visit GitHub profile for real-time data."""
+Note: Live stats temporarily unavailable. Visit GitHub profile for real-time data."""
     
     try:
         user_url = f"https://api.github.com/users/{username}"
         repos_url = f"https://api.github.com/users/{username}/repos?per_page=100&sort=updated"
         
+        # Use GitHub token if available (increases rate limit from 60 to 5000/hour)
         headers = {"Accept": "application/vnd.github.v3+json"}
+        github_token = os.environ.get("GITHUB_TOKEN")
+        if github_token:
+            headers["Authorization"] = f"token {github_token}"
+            print("Using authenticated GitHub API")
+        
         user_response = requests.get(user_url, headers=headers, timeout=10)
         repos_response = requests.get(repos_url, headers=headers, timeout=10)
         
