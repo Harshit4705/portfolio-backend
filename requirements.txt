@@ -5,6 +5,7 @@ langchain-groq
 langchain-community
 chromadb
 python-dotenv
+requests
 pypdf
 duckduckgo-search
 onnxruntime
