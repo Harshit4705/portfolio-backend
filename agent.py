@@ -34,8 +34,22 @@ def get_github_stats():
     """Fetch live GitHub statistics (repos, stars, contributions) for the portfolio owner Harshit4705."""
     import requests
     username = "Harshit4705"
+    
+    # Static fallback data when API is rate limited
+    FALLBACK_DATA = """GitHub User: Harshit4705
+Name: Harshit Chawla
+Bio: Aspiring AI/ML Engineer | BCA Student at GGSIPU
+Public Repos: 15+
+Profile: https://github.com/Harshit4705
+
+Notable Projects:
+  - Portfolio Website (React/Next.js)
+  - AI Chatbot with RAG
+  - Machine Learning Projects
+
+Note: Live stats temporarily unavailable due to API limits. Visit GitHub profile for real-time data."""
+    
     try:
-        # Basic user info
         user_url = f"https://api.github.com/users/{username}"
         repos_url = f"https://api.github.com/users/{username}/repos?per_page=100&sort=updated"
         
@@ -43,17 +57,13 @@ def get_github_stats():
         user_response = requests.get(user_url, headers=headers, timeout=10)
         repos_response = requests.get(repos_url, headers=headers, timeout=10)
         
-        # Log status codes for debugging
         print(f"GitHub API - User: {user_response.status_code}, Repos: {repos_response.status_code}")
         
         if user_response.status_code == 200 and repos_response.status_code == 200:
             user_data = user_response.json()
             repos_data = repos_response.json()
             
-            # Calculate total stars
             total_stars = sum(repo.get("stargazers_count", 0) for repo in repos_data)
-            
-            # Get top 5 repos by stars
             top_repos = sorted(repos_data, key=lambda x: x.get("stargazers_count", 0), reverse=True)[:5]
             top_repos_str = "\n".join([f"  - {r['name']} ({r['stargazers_count']} ⭐)" for r in top_repos])
             
@@ -68,13 +78,15 @@ def get_github_stats():
                 f"Top Repositories:\n{top_repos_str}"
             )
         elif user_response.status_code == 403:
-            return "GitHub API rate limit exceeded. Please try again later."
+            print("GitHub API rate limited, using fallback data")
+            return FALLBACK_DATA
         else:
-            return f"Could not fetch GitHub data. Status: User={user_response.status_code}, Repos={repos_response.status_code}"
+            return FALLBACK_DATA
     except requests.exceptions.Timeout:
-        return "GitHub API request timed out. Please try again."
+        return FALLBACK_DATA
     except Exception as e:
-        return f"Error fetching GitHub data: {str(e)}"
+        print(f"GitHub API error: {str(e)}")
+        return FALLBACK_DATA
 
 tools = [lookup_resume, get_github_stats]
 
