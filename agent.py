@@ -35,19 +35,22 @@ def get_github_stats():
     import requests
     username = "Harshit4705"
     
-    # Static fallback data when API is rate limited
+    # Static fallback data with real profile info
     FALLBACK_DATA = """GitHub User: Harshit4705
 Name: Harshit Chawla
-Bio: Aspiring AI/ML Engineer | BCA Student at GGSIPU
-Public Repos: 15+
+Bio: Python Developer
+Public Repos: 9
+Followers: 0
+Following: 0
+Total Stars: 9
 Profile: https://github.com/Harshit4705
 
-Notable Projects:
-  - Portfolio Website (React/Next.js)
-  - AI Chatbot with RAG
-  - Machine Learning Projects
-
-Note: Live stats temporarily unavailable. Visit GitHub profile for real-time data."""
+Top Repositories:
+  - portfolio-backend (1 ⭐) - Portfolio chatbot API
+  - my-ai-portfolio (1 ⭐) - Portfolio website
+  - Code-Review-Agent (1 ⭐) - AI code review assistant
+  - AI-Researcher (1 ⭐) - AI research paper assistant
+  - Aidly (1 ⭐) - Emergency medical AI assistant"""
     
     try:
         user_url = f"https://api.github.com/users/{username}"
