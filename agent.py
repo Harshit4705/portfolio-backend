@@ -39,8 +39,12 @@ def get_github_stats():
         user_url = f"https://api.github.com/users/{username}"
         repos_url = f"https://api.github.com/users/{username}/repos?per_page=100&sort=updated"
         
-        user_response = requests.get(user_url)
-        repos_response = requests.get(repos_url)
+        headers = {"Accept": "application/vnd.github.v3+json"}
+        user_response = requests.get(user_url, headers=headers, timeout=10)
+        repos_response = requests.get(repos_url, headers=headers, timeout=10)
+        
+        # Log status codes for debugging
+        print(f"GitHub API - User: {user_response.status_code}, Repos: {repos_response.status_code}")
         
         if user_response.status_code == 200 and repos_response.status_code == 200:
             user_data = user_response.json()
@@ -63,8 +67,12 @@ def get_github_stats():
                 f"Total Stars: {total_stars}\n"
                 f"Top Repositories:\n{top_repos_str}"
             )
+        elif user_response.status_code == 403:
+            return "GitHub API rate limit exceeded. Please try again later."
         else:
-            return "Could not fetch GitHub data at this time."
+            return f"Could not fetch GitHub data. Status: User={user_response.status_code}, Repos={repos_response.status_code}"
+    except requests.exceptions.Timeout:
+        return "GitHub API request timed out. Please try again."
     except Exception as e:
         return f"Error fetching GitHub data: {str(e)}"
 
